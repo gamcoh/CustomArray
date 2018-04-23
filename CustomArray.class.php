@@ -2,12 +2,31 @@
 
 class CustomArray implements ArrayAccess {
     private $data = array();
+    private $aFuncs = [];
 
-    public function __construct(array $arr=[]) {
+    public function createFunc(string $name, callable $func)
+    {
+        if (method_exists($this, $name)) {
+            return "Can't redefined method. Find another name.";
+        }
+
+        $this->aFuncs[$name] = $func;
+    }
+
+    public function __call(string $name, array $args)
+    {
+        if (isset($this->aFuncs[$name])) {
+            return $this->aFuncs[$name]($this->data, $args);
+        }
+    }
+
+    public function __construct(array $arr=[])
+    {
         $this->data = $arr;
     }
 
-    public function offsetSet($offset, $value) {
+    public function offsetSet($offset, $value)
+    {
         if (is_null($offset)) {
             $this->data[] = $value;
         } else {
@@ -15,15 +34,18 @@ class CustomArray implements ArrayAccess {
         }
     }
 
-    public function offsetExists($offset) {
+    public function offsetExists($offset)
+    {
         return isset($this->data[$offset]);
     }
 
-    public function offsetUnset($offset) {
+    public function offsetUnset($offset)
+    {
         unset($this->data[$offset]);
     }
 
-    public function offsetGet($offset) {
+    public function offsetGet($offset)
+    {
         if (is_callable($offset)) {
             $newArray = [];
             foreach ($this->data as $key => $value) {
@@ -31,20 +53,22 @@ class CustomArray implements ArrayAccess {
                     $newArray[$key] = $value;
                 }
             }
-            return $newArray;
+            $res = $newArray;
         } elseif ($offset === -1) {
-            return end($this->data);
+            $res = end($this->data);
         } elseif (preg_match('/^([0-9]{1,4}):$/', $offset, $index)) {
-            return array_slice($this->data, $index[1], null, true);
+            $res = array_slice($this->data, $index[1], null, true);
         } elseif (preg_match('/^([0-9]{1,4}):([0-9]{1,4})$/', $offset, $index)) {
-            return array_slice($this->data, $index[1], $index[2], true);
+            $res = array_slice($this->data, $index[1], $index[2], true);
         } elseif (preg_match('/^:([0-9]{1,4})$/', $offset, $index)) {
-            return array_reverse(array_slice($this->data, 0, $index[1], true));
+            $res = array_slice($this->data, 0, $index[1], true);
         } elseif ($offset === ':-1') {
-            return array_reverse($this->data);
+            $res = array_reverse($this->data);
+        } else {
+            return $this->data[$offset];
         }
 
-        return isset($this->data[$offset]) ? $this->data[$offset] : null;
+        return $res;
     }
 
     public function valuesTo(callable $func)
@@ -66,4 +90,22 @@ class CustomArray implements ArrayAccess {
         $this->data = $newArray;
         return $newArray;
     }
+
+    public function arsort(): array
+    {
+        arsort($this->data);
+        return $this->data;
+    }
+
+    public function retrieve(): array
+    {
+        return $this->data;
+    }
+
+    public function add($el): array
+    {
+        $this->data[] = $el;
+        return $this->data;
+    }
 }
+

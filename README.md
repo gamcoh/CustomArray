@@ -24,3 +24,19 @@ A PHP Class to work better with arrays
 	$arr = new CustomArray(['a', 'b', 'c']);
 	echo $arr->valuesTo(function ($val) { return '--'.$val.'--'; }); // --a--, --b--, --c--
 
+### Save a method a use it
+
+	$arr = new CustomArray(['foo', 'bar']);
+	$arr->createFunc('allToUpper', function (&$data) {
+		for ($i = 0; $i < count($data); $i++) {
+			$data[$i] = strtoupper($data[$i]);
+		}
+	});
+	$arr->allToUpper();
+	echo $arr[0] // FOO
+	echo $arr[1] // BAR
+	
+	$arr->add('hey');
+	echo $arr[2] // hey
+	$arr->allToUpper();
+	echo $arr[2] // HEY
