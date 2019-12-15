@@ -24,7 +24,7 @@ A PHP Class to work better with arrays
 	$arr = new CustomArray(['a', 'b', 'c']);
 	echo $arr->valuesTo(function ($val) { return '--'.$val.'--'; }); // --a--, --b--, --c--
 
-### Save a method a use it
+### Save a method and use it
 
 	$arr = new CustomArray(['foo', 'bar']);
 	$arr->createFunc('allToUpper', function (&$data) {
